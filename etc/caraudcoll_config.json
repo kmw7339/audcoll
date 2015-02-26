@@ -1,0 +1,7 @@
+{
+    "sampleRate":"48000",
+    "bitDepth":"24",
+    "chanCt":{"input":"4","output":"1"},
+    "defaults":{"duration":"30","fnbase":"caraud"},
+    "inputDevice":"alsaplugin,1,0"
+}

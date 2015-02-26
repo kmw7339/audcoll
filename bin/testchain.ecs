@@ -1,0 +1,20 @@
+# ecasound chainsetup file
+
+# general 
+-b:1024 -r:-1 -z:intbuf -z:db,100000 -n:"carrec1" -X -z:noxruns -z:nopsr -z:mixmode,sum
+
+# audio inputs 
+-a:1,2,3,4 -f:s16_le,4,48000 -i:alsaplugin,1,0,0
+
+# audio outputs 
+-a:1 -f:s24_le,4,48000 -o:chan01.wav,
+-a:2 -f:s24_le,4,48000 -o:chan02.wav,
+-a:3 -f:s24_le,4,48000 -o:chan03.wav,
+-a:4 -f:s24_le,4,48000 -o:chan04.wav,
+
+# chain operators and controllers 
+-a:1 -chcopy:1.00,1.00 
+-a:2 -chcopy:2.00,1.00 
+-a:3 -chcopy:3.00,1.00 
+-a:4 -chcopy:4.00,1.00 
+

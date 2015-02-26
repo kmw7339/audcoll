@@ -1,0 +1,27 @@
+cs-add chainset
+
+cs-set-length 30
+cs-set-audio-format 24,4,48000
+
+c-add 1,2,3,4
+
+c-select 1,2,3,4
+ai-add alsaplugin,1,0
+
+c-select 1
+ao-add foobarX.wav
+cop-add chcopy:1,1
+
+
+c-select 2
+ao-add foobarY.wav
+cop-add chcopy:2,1
+
+
+c-select 3
+ao-add foobarZ.wav
+cop-add chcopy:3,1
+
+c-select 4
+ao-add foobarA.wav
+cop-add chcopy:4,1
