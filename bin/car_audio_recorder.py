@@ -3,30 +3,54 @@
 import sys
 import json
 import types
+import getopt
 import re
 import datetime
 import psycopg2
 import getopt
+from CarAudConfig import *
 from pyeca import *
 
 class EcaRec:
 
-    def __init__(self,maxidx):
-        self.ecaobj = ECA_CONTROL_INTERFACE()
-        self.chnidx = 0
-        self.fnbase = "defrec"
-        self.carBitDepth = 24
-        self.carOChanCt = 1
-        self.carSampleRate = 48000
-        self.recDuration = 30
-        self.ecaobj.command("cs-add chainset")
-        self.ecaobj.command("cs-set-length 30")
-        self.setFormat(self.carBitDepth,4,self.carSampleRate)
-        self.chanAdd("1,2,3,4")
-        self.ecaobj.command("ai-add alsaplugin,1,0")
+    cacConfigFile = '../etc/caraudcoll_config.json'
+    def __init__(self,DEBUG=None):
+
+        self.debugmode = DEBUG
+        self.cfgObj        = CarAudConfig(EcaRec.cacConfigFile)
+        self.chnStartIdx   = 1
+        self.currChain     = "LDC123"
+        self.fnbase        = self.cfgObj.fnbase()
+        self.inputDevice   = self.cfgObj.inputDevice()
+        self.carBitDepth   = self.cfgObj.bitDepth()
+        self.carOChanCt    = int(self.cfgObj.chanCt('output'))
+        self.carOChanArry  = range(self.chnStartIdx, self.carOChanCt)
+        self.carIChanCt    = self.cfgObj.chanCt('input')
+        self.carSampleRate = int(self.cfgObj.sampleRate())
+        self.recDuration   = int(self.cfgObj.duration())
+        self.ecaobj        = ECA_CONTROL_INTERFACE(0)
+
+    def createChanset(self,chnLabel=None):
+        if chnLabel:
+            self.currChain = label
+        self.ecaobj.command("cs-add {}".format(self.currChain))
+
+    def setOutFile(self,ofil=None):
+        if ofil:
+            self.fnbase = ofil
+
+    def setDuration(self,duration=None):
+        if duration:
+            self.recDuration = duration
+        self.ecaobj.command("cs-set-length {}".format(self.recDuration))
+
+    def setSource(self):
+        self.ecaobj.command("ai-add {}".format(self.inputDevice))
+
+    def dump(self):
+        print self.ecaobj.command("cs-status")
 
     def outchn(self,chnidx):
-
         self.chanSel(chnidx)
         self.carOutputFmt()
         ofn = "{}_{}.wav".format(self.fnbase,chnidx)
@@ -36,23 +60,40 @@ class EcaRec:
     def carOutputFmt(self):
         self.setFormat(self.carBitDepth, self.carOChanCt, self.carSampleRate)
 
-    def setFormat(self,bitdepth,chanct,samplerate):
-        self.ecaobj.command("cs-set-audio-format {},{},{}".format(bitdepth,chanct,samplerate))
+    def setFormat(self,bd,ct,sr):
+        if self.debugmode > 0:
+            print "{} {} {}".format(bd, ct, sr)
+        self.ecaobj.command("cs-set-audio-format {},{},{}".format(bd, ct, sr))
+
 
     def chanSel(self,chnlst):
         self.ecaobj.command("c-select {}".format(chnlst))
 
-    def chanAdd(self,chnlst):
-        self.ecaobj.command("c-add {}".format(chnlst))
+    def ochanAdd(self,chnlst):
+        for cl in chnlst:            
+            self.outchn(int(cl))
+
+    def ichanAdd(self,chnlst):
+        chnstr = "{}".format(",".join(map(str,chnlst)))
+        self.ecaobj.command("c-add {}".format(chnstr))
+        self.ecaobj.command("c-select {}".format(chnstr))
+        self.ecaobj.command("ai-add {}".format(self.inputDevice))
 
     def startRec(self):
         self.ecaobj.command("start")
 
     def stopRec(self):
         self.ecaobj.command("stop")
+
     def ioStatus(self):
         self.ecaobj.command("aio-status")
         return(self.ecaobj.last_string())
+
+    def isRunning(self):
+        if self.engineStatus() == "running":
+            return(True)
+        else:
+            return(None)
 
     def engineStatus(self):
         self.ecaobj.command("engine-status")
@@ -61,38 +102,40 @@ class EcaRec:
     def disconnect(self):
         self.ecaobj.command("cs-disconnect")
 
-#
-#ctr = 360;
-#while ctr > 0:
-#    time.sleep(1)
-#    #e.command("cop-status")
-#    #print e.last_string()
-#    ctr = ctr - 1
-#    print ctr
-#
-#e.command("stop")
-#e.command("cs-disconnect")
+def usage():
+    print "car_audio_recorder.py"
 
-
-
-        
 def main(argv=None):
+    try:                                
+        opts, args = getopt(argv, "f:") 
+    except getopt.GetoptError:           
+        usage()                          
+        sys.exit(2)                     
 
-    chan_list = [1,2,3,4]
-    ecarec = EcaRec(len(chan_list))
-    for cl in chan_list:
-        ecarec.outchn(cl)
+    ecarec = EcaRec()
+    ecarec.createChanset()
+    ecarec.setDuration(5)
+    ecarec.setOutFile("kevinstest")
+
+    ecarec.ichanAdd([1,2,3,4])
+    ecarec.ochanAdd([1,2,3,4])
+
+    print ecarec.engineStatus()
     ecarec.startRec()
     
     while 1:
-        print ecarec.engineStatus()
+        if ecarec.engineStatus() == "running": 
+            break 
+
+    while ecarec.isRunning():
+        print "OK"
 
     ecarec.stopRec()
 
     ecarec.disconnect()
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
 
 
 
@@ -106,7 +149,6 @@ if __name__ == '__main__':
 #e.command("cs-set-audio-format 24,4,48000")
 #
 #e.command("c-add 1,2,3,4")
-#
 #e.command("c-select 1,2,3,4")
 #e.command("ai-add alsaplugin,1,0")
 #
