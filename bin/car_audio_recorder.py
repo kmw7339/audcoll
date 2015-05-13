@@ -6,8 +6,9 @@ import types
 import getopt
 import re
 import datetime
+import time
 import psycopg2
-import getopt
+from getopt import *
 from CarAudConfig import *
 from pyeca import *
 
@@ -103,24 +104,33 @@ class EcaRec:
         self.ecaobj.command("cs-disconnect")
 
 def usage():
-    print "car_audio_recorder.py"
+    print "car_audio_recorder.py -f file -d duration"
+
+def timestamp():
+    rawts = time.time()
+    rtnts = datetime.datetime.fromtimestamp(rawts).strftime('%Y%m%d_%H%M%S')
+    return(rtnts)
 
 def main(argv=None):
     try:                                
-        opts, args = getopt(argv, "f:") 
+        opts, args = getopt(argv, "f:d:t") 
     except getopt.GetoptError:           
         usage()                          
         sys.exit(2)                     
 
+    default_timestamp = timestamp()
+    default_fnlabel = opts[0][1]
+    default_duration = opts[1][1]
+    default_ofname = "{}_{}".format(default_timestamp,opts[0][1])
+    
     ecarec = EcaRec()
     ecarec.createChanset()
-    ecarec.setDuration(5)
-    ecarec.setOutFile("kevinstest")
+    ecarec.setDuration(default_duration)
+    ecarec.setOutFile(default_ofname)
 
     ecarec.ichanAdd([1,2,3,4])
     ecarec.ochanAdd([1,2,3,4])
 
-    print ecarec.engineStatus()
     ecarec.startRec()
     
     while 1:
@@ -128,7 +138,7 @@ def main(argv=None):
             break 
 
     while ecarec.isRunning():
-        print "OK"
+        time.sleep(2)
 
     ecarec.stopRec()
 
