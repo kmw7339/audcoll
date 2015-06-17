@@ -113,16 +113,28 @@ def timestamp():
 
 def main(argv=None):
     try:                                
-        opts, args = getopt(argv, "f:d:t") 
+        opts, args = getopt(argv, "f:d:") 
     except getopt.GetoptError:           
         usage()                          
-        sys.exit(2)                     
+        sys.exit(2)         
+
+    default_fnlabel = none
+    default_duration = none
+            
+    for o, a in opts:
+        if o == '-f':
+            default_fnlabel = a
+        elif o == '-d':
+            default_duration = a
+    
+    if default_fnlabel is None:
+        sys.exit(2)
+    elif default_duration is None:
+        sys.exit(2)
 
     default_timestamp = timestamp()
-    default_fnlabel = opts[0][1]
-    default_duration = opts[1][1]
-    default_ofname = "{}_{}".format(default_timestamp,opts[0][1])
-    
+    default_ofname = "{}_{}".format(default_timestamp,default_fnlabel)
+
     ecarec = EcaRec()
     ecarec.createChanset()
     ecarec.setDuration(default_duration)
