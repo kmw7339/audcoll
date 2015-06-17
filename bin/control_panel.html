@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang='en'>
+  <head>
+    <meta charset='utf-8' />
+    <title>AudColl Recorder Control Panel</title>
+    <link href='control_panel.css' rel='stylesheet' />
+    <script src='control_panel.js'></script>
+  </head>
+  <body>
+    <h1>AudColl Recorder Control Panel</h1>
+    <div id='input-panel'>
+      <form>
+	<input name="q" placeholder="Session Date/Time">
+	<input type="submit" value="Search">
+	
+	<input type="number"
+	       min="2014"
+	       max="2017"
+	       step="1"
+	       value="2015">
+	<input type="number"
+	       min="0"
+	       max="10"
+	       step="2"
+	       value="6">
+      </form>
+    </div>
+    <div id='control-panel'>
+      <div id='recorder-controls'>
+	<progress id='progress-bar' min='0' max='100' value='0'>0% played</progress>
+	<button   id='replay-button' class='replay' title='replay' onclick='replayMedia();'>Replay</button>	
+	
+	<button   id='play-pause-button' class='play' title='play' onclick='togglePlayPause();'>Play</button>
+	<button   id='stop-button' class='stop' title='stop' onclick='stopPlayer();'>Stop</button>
+	<button   id='redo-button' class='redo' title='redo' onclick='redoPlayer();'>Redo</button>
+	
+	<button   id='volume-inc-button' class='volume-plus' title='increase volume' onclick='changeVolume("+");'>Increase volume</button>
+	<button   id='volume-dec-button' class='volume-minus' title='decrease volume' onclick='changeVolume("-");'>Decrease volume</button>
+	<button   id='mute-button' class='mute' title='mute' onclick='toggleMute("true");'>Mute</button>	
+      </div>
+    </div>
+    <br>
+    <div id='status-panel'>
+      
+    </div>
+  </body>
+</html>
