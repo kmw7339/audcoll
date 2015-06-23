@@ -7,21 +7,21 @@ class AudCollApi():
     def __init__(self):
         self.app = Flask(__name__)
         self.api = Api(self.app)        
-        self.api.add_resource(TodoSimple,'/<string:todo_id>')
+        self.api.add_resource(EcaStatus,'/EcaStatus')
+        self.api.add_resource(SetName,'/SetName/<string:ecaname>', endpoint="ecaname")
 
     def run(self):
         self.app.run(debug=True)
 
-class TodoSimple(Resource):
-    def __init__(self):
-        self.todos = {}
+class SetName(Resource):
+    def get(self,ecaname):
+        return { 'SetName': ecaname }
 
-    def get(self, todo_id):
-        return {todo_id: self.todos[todo_id]}
+class EcaStatus(Resource):
+    def get(self):
+        return { 'EcaStatus': 'OK' }
 
-    def put(self, todo_id):
-        self.todos[todo_id] = request.form['data']
-        return {todo_id: self.todos[todo_id]}
+
 
 if __name__ == '__main__':
     aci = AudCollApi()
