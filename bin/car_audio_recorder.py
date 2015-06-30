@@ -118,8 +118,8 @@ def main(argv=None):
         usage()                          
         sys.exit(2)         
 
-    default_fnlabel = none
-    default_duration = none
+    default_fnlabel = None
+    default_duration = None
             
     for o, a in opts:
         if o == '-f':
